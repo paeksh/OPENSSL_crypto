@@ -24,4 +24,13 @@ part B. asymmetric cryptography
 
 part C. generate sign
 ----------------
-    
+
+    - part_c.txt를 part B의 개인키 + sha-256으로 서명한다
+
+part D. authorize sign
+------------------
+
+    - 학생마다 주어진 sigs/안의 파일 안의 file1.sig, file2.sig, file3.sig을 검증 ->  INVALID/VALID
+
+part E. 
+----------------
