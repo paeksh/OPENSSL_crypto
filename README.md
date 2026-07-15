@@ -67,8 +67,21 @@ write_file()
 
 main()
 
+    enc 모드
+        - key_buf, infile_buf로 키와 입력파일을 읽음
+        - 키가 32바이트인지 검증
+        - RAND_bytes로 16바이트 랜덤 iv todtjd
+        - 암호화 3단계 수행 (AES-256-CBC)
+        - HMAC 인증 태그 생성
+        - memcpy로 파일 버퍼에 iv 16바이트와 암호문 합쳐서 입력
+        - 태그는 별도 파일에 저장
+
     dec 모드 
-        - in_buf안의 암호문을 평문으로 복호화해 out_buf에 저장 후, HMAC(key, out_buf)으로 구한 태그를 tag_buf의 내용과 비교
-        - 복호화할때 in_buf의 앞의 iv 16 바이트는 제회하고 해야함
-        
+        - key_buf와 in_buf로 암호문과 키 파일을 읽음
+        - 입력파일 앞의 16비트는 iv, 나머지는 암호문으로 분리
+        - 복호화 3단계 수행
+        - 복호화된 평문과 키로 HMAC 태그 계산
+        - CRYPTO_memcmp 로 계산한 태그와 받은 태그 비교 (타이밍 공격을 방지)
+        - 태그 불일치 시 종료, 일치 시 평문을 출력파일에 저장
+
     
