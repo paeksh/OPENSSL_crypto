@@ -32,5 +32,43 @@ part D. authorize sign
 
     - 학생마다 주어진 sigs/안의 파일 안의 file1.sig, file2.sig, file3.sig을 검증 ->  INVALID/VALID
 
-part E. 
+part E. encryption + HMAC implementation
 ----------------
+
+    - E에서는 enc와 dec 두개의 mode를 두고 enc에서는 입력 파일 암호화 + HMAC 태그 생성, dec에서는 HMAC 무결성 검증 + 복호화 or 실패 처리를 한다.
+    - HMAC : 비밀키, 해시 함수 (sha-256)을 합쳐서 만드는 태그
+    - 송신자는 tag = HMAC(key, message)을 계산해 (message, tag) 쌍을 보냄 (enc 에서 구현)
+    - 수신자는 받은 message로 HMAC(key, message)를 계산해보고, 결과가 tag와 같으면 변조가 없었다고 판단 (dec 에서 구현)
+
+<코드 설명>
+
+parse_args()
+
+    - 인자가 10개 들어왔는지 검사한다 (여기서 인자의 중복을 방지할수 있다. 하나라도 중복되면 구조체가 다 채워지지 않아서 마지막에 구조체 다 채워졌는지만 검사하면됨)
+    - enc, dec 모드를 검사하고 mode에 저장한다
+    - 각 파일이름 (-key, -in, -out, -tag)을 검사하고 그 뒤에 오는 파일 이름을 구조체의 각 부분에 저장한다.
+    - 파일 이름들은 순서가 상관 없으므로 명령줄 인자의 2, 4, 6, 8번째만 검사하고 저장한다.
+
+
+read_file()
+
+    - 함수의 인자는 두개 : 읽어들일 파일 이름과 메인에서 미리 정의할 파일의 길이
+    - 파일의 크기를 fseek로 구한다. 여기서 fseek는 파일의 끝 (seek_end)로 이동해서 ftell로 사이즈를 저장한다음 다시 파일의 맨 처음으로 돌아온다
+    - 그리고 힙에 구한 파일의 크기만큼 메모리를 할당해서 파일의 내용을 fread로 저장함
+    - 파일의 길이도 별도로 저장
+
+write_file()
+
+    - 함수의 인자는 세개 : 내용을 쓸 파일 이름과 내용, 그리고 파일의 길이
+    - 파일은 wb, 바이너리 쓰기 모드로 연다 (파일을 덮어씀)
+    - fwrite로 1바이트를 len개 만큼 쓴다. 
+    - 다 쎴다면 1을 반환, 안 썼으면 0을 반환(?????)
+
+
+main()
+
+    dec 모드 
+        - in_buf안의 암호문을 평문으로 복호화해 out_buf에 저장 후, HMAC(key, out_buf)으로 구한 태그를 tag_buf의 내용과 비교
+        - 복호화할때 in_buf의 앞의 iv 16 바이트는 제회하고 해야함
+        
+    
